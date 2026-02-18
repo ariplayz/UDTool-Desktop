@@ -11,101 +11,59 @@
 
         <!-- Define the installation directory -->
         <StandardDirectory Id="ProgramFiles64Folder">
-            <Directory Id="INSTALLFOLDER" Name="UDTool Desktop" />
+            <Directory Id="INSTALLFOLDER" Name="UDTool Desktop">
+                <Component Id="MainComponent" Guid="B2C3D4E5-F6A7-4B8C-9D0E-1F2A3B4C5D6E">
+                    <File Id="UDToolDesktopExe" 
+                          Source="$(var.PublishDir)\UDTool-Desktop.exe" 
+                          KeyPath="yes">
+                        <Shortcut Id="StartMenuShortcut"
+                                  Directory="ApplicationProgramsFolder"
+                                  Name="UDTool Desktop"
+                                  Description="File Management Tool"
+                                  WorkingDirectory="INSTALLFOLDER"
+                                  Icon="AppIcon.exe"
+                                  IconIndex="0"
+                                  Advertise="yes" />
+                    </File>
+                    
+                    <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+                    <RemoveFolder Id="INSTALLFOLDER" On="uninstall"/>
+                    <RegistryValue Root="HKCU" 
+                                  Key="Software\AriCummings\UDToolDesktop" 
+                                  Name="installed" 
+                                  Type="integer" 
+                                  Value="1" 
+                                  KeyPath="no"/>
+                </Component>
+            </Directory>
+        </StandardDirectory>
+
+        <!-- Create Start Menu shortcut -->
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ApplicationProgramsFolder" Name="UDTool Desktop">
+                <Component Id="ApplicationShortcut" Guid="D4E5F6A7-B8C9-4D0E-1F2A-3B4C5D6E7F8A">
+                    <Shortcut Id="UninstallProduct"
+                             Name="Uninstall UDTool Desktop"
+                             Description="Uninstalls UDTool Desktop"
+                             Target="[System64Folder]msiexec.exe"
+                             Arguments="/x [ProductCode]"/>
+                    <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+                    <RegistryValue Root="HKCU" 
+                                  Key="Software\AriCummings\UDToolDesktop"
+                                  Name="installed" 
+                                  Type="integer" 
+                                  Value="1" 
+                                  KeyPath="yes"/>
+                </Component>
+            </Directory>
         </StandardDirectory>
 
         <!-- Define features to install -->
         <Feature Id="ProductFeature" Title="UDTool Desktop" Level="1">
-            <ComponentGroupRef Id="ProductComponents" />
-            <ComponentGroupRef Id="ProductShortcuts" />
+            <ComponentRef Id="MainComponent" />
+            <ComponentRef Id="ApplicationShortcut" />
         </Feature>
-
-        <!-- Create Start Menu shortcut -->
-        <StandardDirectory Id="ProgramMenuFolder">
-            <Directory Id="ApplicationProgramsFolder" Name="UDTool Desktop"/>
-        </StandardDirectory>
     </Package>
-
-    <!-- Fragment for the application files -->
-    <Fragment>
-        <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-            <Component Id="MainExecutable" Guid="B2C3D4E5-F6A7-4B8C-9D0E-1F2A3B4C5D6E">
-                <File Id="UDToolDesktopExe" 
-                      Source="$(var.PublishDir)\UDTool-Desktop.exe" 
-                      KeyPath="yes">
-                    <Shortcut Id="StartMenuShortcut"
-                              Directory="ApplicationProgramsFolder"
-                              Name="UDTool Desktop"
-                              Description="File Management Tool"
-                              WorkingDirectory="INSTALLFOLDER"
-                              Icon="AppIcon.exe"
-                              IconIndex="0"
-                              Advertise="yes" />
-                </File>
-                <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
-                <RegistryValue Root="HKCU" 
-                              Key="Software\AriCummings\UDToolDesktop" 
-                              Name="installed" 
-                              Type="integer" 
-                              Value="1" 
-                              KeyPath="no"/>
-            </Component>
-
-            <!-- Include all DLL dependencies -->
-            <Component Id="Dependencies" Guid="C3D4E5F6-A7B8-4C9D-0E1F-2A3B4C5D6E7F">
-                <File Id="AvaloniaDll" Source="$(var.PublishDir)\Avalonia.dll" />
-                <File Id="AvaloniaBaseDll" Source="$(var.PublishDir)\Avalonia.Base.dll" />
-                <File Id="AvaloniaControlsDll" Source="$(var.PublishDir)\Avalonia.Controls.dll" />
-                <File Id="AvaloniaControlsColorPickerDll" Source="$(var.PublishDir)\Avalonia.Controls.ColorPicker.dll" />
-                <File Id="AvaloniaDesignerSupportDll" Source="$(var.PublishDir)\Avalonia.DesignerSupport.dll" />
-                <File Id="AvaloniaDesktopDll" Source="$(var.PublishDir)\Avalonia.Desktop.dll" />
-                <File Id="AvaloniaDiagnosticsDll" Source="$(var.PublishDir)\Avalonia.Diagnostics.dll" />
-                <File Id="AvaloniaDialogsDll" Source="$(var.PublishDir)\Avalonia.Dialogs.dll" />
-                <File Id="AvaloniaFontsInterDll" Source="$(var.PublishDir)\Avalonia.Fonts.Inter.dll" />
-                <File Id="AvaloniaFreeDesktopDll" Source="$(var.PublishDir)\Avalonia.FreeDesktop.dll" />
-                <File Id="AvaloniaMarkupDll" Source="$(var.PublishDir)\Avalonia.Markup.dll" />
-                <File Id="AvaloniaMarkupXamlDll" Source="$(var.PublishDir)\Avalonia.Markup.Xaml.dll" />
-                <File Id="AvaloniaMetalDll" Source="$(var.PublishDir)\Avalonia.Metal.dll" />
-                <File Id="AvaloniaMicroComDll" Source="$(var.PublishDir)\Avalonia.MicroCom.dll" />
-                <File Id="AvaloniaNativeDll" Source="$(var.PublishDir)\Avalonia.Native.dll" />
-                <File Id="AvaloniaOpenGLDll" Source="$(var.PublishDir)\Avalonia.OpenGL.dll" />
-                <File Id="AvaloniaRemoteProtocolDll" Source="$(var.PublishDir)\Avalonia.Remote.Protocol.dll" />
-                <File Id="AvaloniaSkiaDll" Source="$(var.PublishDir)\Avalonia.Skia.dll" />
-                <File Id="AvaloniaThemesFluentDll" Source="$(var.PublishDir)\Avalonia.Themes.Fluent.dll" />
-                <File Id="AvaloniaThemesSimpleDll" Source="$(var.PublishDir)\Avalonia.Themes.Simple.dll" />
-                <File Id="AvaloniaVulkanDll" Source="$(var.PublishDir)\Avalonia.Vulkan.dll" />
-                <File Id="AvaloniaWin32AutomationDll" Source="$(var.PublishDir)\Avalonia.Win32.Automation.dll" />
-                <File Id="AvaloniaWin32Dll" Source="$(var.PublishDir)\Avalonia.Win32.dll" />
-                <File Id="AvaloniaX11Dll" Source="$(var.PublishDir)\Avalonia.X11.dll" />
-                <File Id="CommunityToolkitMvvmDll" Source="$(var.PublishDir)\CommunityToolkit.Mvvm.dll" />
-                <File Id="HarfBuzzSharpDll" Source="$(var.PublishDir)\HarfBuzzSharp.dll" />
-                <File Id="MicroComRuntimeDll" Source="$(var.PublishDir)\MicroCom.Runtime.dll" />
-                <File Id="SkiaSharpDll" Source="$(var.PublishDir)\SkiaSharp.dll" />
-                <File Id="TmdsDBusProtocolDll" Source="$(var.PublishDir)\Tmds.DBus.Protocol.dll" />
-                <File Id="UDToolDesktopDll" Source="$(var.PublishDir)\UDTool-Desktop.dll" />
-                <File Id="UDToolDesktopPdb" Source="$(var.PublishDir)\UDTool-Desktop.pdb" />
-                <File Id="UDToolDesktopDepsJson" Source="$(var.PublishDir)\UDTool-Desktop.deps.json" />
-                <File Id="UDToolDesktopRuntimeConfigJson" Source="$(var.PublishDir)\UDTool-Desktop.runtimeconfig.json" />
-            </Component>
-        </ComponentGroup>
-
-        <ComponentGroup Id="ProductShortcuts" Directory="ApplicationProgramsFolder">
-            <Component Id="ApplicationShortcut" Guid="D4E5F6A7-B8C9-4D0E-1F2A-3B4C5D6E7F8A">
-                <Shortcut Id="UninstallProduct"
-                         Name="Uninstall UDTool Desktop"
-                         Description="Uninstalls UDTool Desktop"
-                         Target="[System64Folder]msiexec.exe"
-                         Arguments="/x [ProductCode]"/>
-                <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
-                <RegistryValue Root="HKCU" 
-                              Key="Software\AriCummings\UDToolDesktop"
-                              Name="installed" 
-                              Type="integer" 
-                              Value="1" 
-                              KeyPath="yes"/>
-            </Component>
-        </ComponentGroup>
-    </Fragment>
 
     <!-- Define the icon -->
     <Fragment>

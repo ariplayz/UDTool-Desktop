@@ -278,7 +278,8 @@ dotnet publish UDTool-Desktop/UDTool-Desktop.csproj `
     -c Release `
     -r win-x64 `
     --self-contained true `
-    -p:PublishSingleFile=false `
+    -p:PublishSingleFile=true `
+    -p:IncludeNativeLibrariesForSelfExtract=true `
     -o publish/win-x64
 
 # 2. Install WiX (if not installed)

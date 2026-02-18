@@ -1,4 +1,4 @@
-﻿﻿# Build MSI Installer for UDTool Desktop
+﻿# Build MSI Installer for UDTool Desktop
 # This script builds the Windows MSI installer using WiX v5
 
 param(
@@ -22,8 +22,8 @@ dotnet publish UDTool-Desktop/UDTool-Desktop.csproj `
     -c $Configuration `
     -r win-x64 `
     --self-contained true `
-    -p:PublishSingleFile=false `
-    -p:PublishTrimmed=false `
+    -p:PublishSingleFile=true `
+    -p:IncludeNativeLibrariesForSelfExtract=true `
     -o $publishDir
 
 if ($LASTEXITCODE -ne 0) {
