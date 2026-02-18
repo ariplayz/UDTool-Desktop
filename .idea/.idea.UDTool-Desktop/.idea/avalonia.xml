@@ -3,6 +3,10 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="UDTool-Desktop/App.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
+        <entry key="UDTool-Desktop/AppDefaultStyles.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
+        <entry key="UDTool-Desktop/Elements/Tabs.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
+        <entry key="UDTool-Desktop/Elements/Topbar.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
         <entry key="UDTool-Desktop/Views/MainWindow.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
       </map>
     </option>

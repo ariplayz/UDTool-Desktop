@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="UDTool_Desktop.App"
              xmlns:local="using:UDTool_Desktop"
+             xmlns:converters="using:UDTool_Desktop.Converters"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -11,5 +11,58 @@
   
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="/AppDefaultStyles.axaml"></StyleInclude>
     </Application.Styles>
+
+    <Application.Resources>
+        <!-- Converters -->
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
+        
+        <!-- Modern Red Theme Colors -->
+        <Color x:Key="SystemAccentColor">#E63946</Color>
+        <Color x:Key="SystemAccentColorLight">#F1FAEE</Color>
+        <Color x:Key="SystemAccentColorDark">#A8202A</Color>
+        
+        <SolidColorBrush x:Key="PrimaryRed">#E63946</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkRed">#A8202A</SolidColorBrush>
+        <SolidColorBrush x:Key="OffWhite">#F1FAEE</SolidColorBrush>
+        <SolidColorBrush x:Key="DeepDark">#1D3557</SolidColorBrush>
+        <SolidColorBrush x:Key="MidDark">#457B9D</SolidColorBrush>
+        <SolidColorBrush x:Key="LightBlue">#A8DADC</SolidColorBrush>
+
+        <SolidColorBrush x:Key="BackgroundBrush">#0F172A</SolidColorBrush>
+        <SolidColorBrush x:Key="CardBackgroundBrush">#1E293B</SolidColorBrush>
+        <SolidColorBrush x:Key="PrimaryForeground">#F8FAFC</SolidColorBrush>
+        <SolidColorBrush x:Key="SecondaryForeground">#94A3B8</SolidColorBrush>
+        <SolidColorBrush x:Key="AccentForeground">White</SolidColorBrush>
+        
+        <!-- Modern Red Gradients -->
+        <LinearGradientBrush x:Key="RedGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#E63946" Offset="0.0"/>
+            <GradientStop Color="#A8202A" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="DarkRedGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#A8202A" Offset="0.0"/>
+            <GradientStop Color="#7B171E" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Glass Effect with Red Tint -->
+        <LinearGradientBrush x:Key="RedGlassBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Offset="0" Color="#26E63946"></GradientStop>
+            <GradientStop Offset="1" Color="#1AE63946"></GradientStop>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="RedBorderGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#80E63946" Offset="0.0"/>
+            <GradientStop Color="#40A8202A" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <FontFamily x:Key="AkkoPro">/Assets/Fonts/Akko-Pro-Regular.ttf#Akko Pro</FontFamily>
+        <FontFamily x:Key="AkkoProBold">/Assets/Fonts/Akko-Pro-Bold.ttf#Akko Pro</FontFamily>
+        <FontFamily x:Key="Phosphor">/Assets/Fonts/Phosphor.ttf#Phosphor</FontFamily>
+        <FontFamily x:Key="PhosphorFill">/Assets/Fonts/Phosphor-Fill.ttf#Phosphor-Fill</FontFamily>
+        <FontFamily x:Key="JetBrainsMono">/Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono</FontFamily>
+    </Application.Resources>
+
 </Application>

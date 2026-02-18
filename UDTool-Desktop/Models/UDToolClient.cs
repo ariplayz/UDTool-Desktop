@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -15,13 +15,100 @@ public class UDToolClient
     private const string BaseUrl = "https://UDTool.delphigamerz.xyz";
     private const string Version = "1.0";
     private readonly HttpClient _client;
+    private string? _apiKey;
 
-    public UDToolClient()
+    public UDToolClient(string? apiKey = null)
     {
+        _apiKey = apiKey;
         _client = new HttpClient(new SocketsHttpHandler())
         {
             Timeout = TimeSpan.FromSeconds(30)
         };
+        
+        if (!string.IsNullOrEmpty(_apiKey))
+        {
+            _client.DefaultRequestHeaders.Add("API-Key", _apiKey);
+        }
+    }
+    
+    /// <summary>
+    /// Sets or updates the API key for this client.
+    /// </summary>
+    /// <param name="apiKey">The API key to use for requests</param>
+    public void SetApiKey(string apiKey)
+    {
+        _apiKey = apiKey;
+        _client.DefaultRequestHeaders.Remove("API-Key");
+        if (!string.IsNullOrEmpty(_apiKey))
+        {
+            _client.DefaultRequestHeaders.Add("API-Key", _apiKey);
+        }
+    }
+    
+    /// <summary>
+    /// Checks if an API key is valid.
+    /// </summary>
+    /// <param name="key">The API key to check</param>
+    /// <returns>A result object indicating if the key is valid</returns>
+    public async Task<KeyCheckResult> CheckKeyAsync(string key)
+    {
+        try
+        {
+            var response = await _client.GetAsync($"{BaseUrl}/key/check/{key}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<KeyCheckResponse>(jsonContent);
+                
+                bool isValid = result?.message?.Contains("valid") == true && !result.message.Contains("not valid");
+                return new KeyCheckResult(isValid, result?.message ?? "Unknown response");
+            }
+            else
+            {
+                return new KeyCheckResult(false, $"Key check failed with status: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            return new KeyCheckResult(false, $"Key check error: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Creates a new API key.
+    /// </summary>
+    /// <returns>A result object containing the new key or error message</returns>
+    public async Task<NewKeyResult> CreateNewKeyAsync()
+    {
+        try
+        {
+            var response = await _client.PostAsync($"{BaseUrl}/key/new", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<NewKeyResponse>(jsonContent);
+                
+                if (result?.key != null)
+                {
+                    return new NewKeyResult(true, result.key, result.message ?? "Key created successfully");
+                }
+                else
+                {
+                    return new NewKeyResult(false, null, "Failed to parse key from response");
+                }
+            }
+            else
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                return new NewKeyResult(false, null, $"Key creation failed with status: {response.StatusCode}\n{errorBody}");
+            }
+        }
+        catch (Exception ex)
+        {
+            return new NewKeyResult(false, null, $"Key creation error: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -261,3 +348,47 @@ public class SearchResult
     public static SearchResult FailureResult(string errorMessage) => new(false, new List<string>(), errorMessage);
 }
 
+/// <summary>
+/// Represents the result of a key check operation.
+/// </summary>
+public class KeyCheckResult
+{
+    public bool IsValid { get; }
+    public string Message { get; }
+    
+    public KeyCheckResult(bool isValid, string message)
+    {
+        IsValid = isValid;
+        Message = message;
+    }
+}
+
+/// <summary>
+/// Represents the result of a new key creation.
+/// </summary>
+public class NewKeyResult
+{
+    public bool IsSuccess { get; }
+    public string? Key { get; }
+    public string Message { get; }
+    
+    public NewKeyResult(bool isSuccess, string? key, string message)
+    {
+        IsSuccess = isSuccess;
+        Key = key;
+        Message = message;
+    }
+}
+
+// Helper classes for JSON deserialization
+internal class KeyCheckResponse
+{
+    public string? message { get; set; }
+    public string? key { get; set; }
+}
+
+internal class NewKeyResponse
+{
+    public string? message { get; set; }
+    public string? key { get; set; }
+}

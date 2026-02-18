@@ -1,0 +1,43 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="900" d:DesignHeight="100"
+             x:Class="UDTool_Desktop.Elements.Topbar">
+
+    <DockPanel Background="{DynamicResource DarkRedGradientBrush}" 
+               HorizontalAlignment="Stretch" 
+               Height="100">
+        
+        <StackPanel Orientation="Horizontal" 
+                    Spacing="10"
+                    VerticalAlignment="Center"
+                    Margin="15,0">
+            
+            <Image Width="70" Height="70" 
+                   Source="../Assets/logo.png"
+                   VerticalAlignment="Center"/>
+            
+            <StackPanel VerticalAlignment="Center" Spacing="5">
+                <Label Classes="title" 
+                       Content="UDTool" 
+                       FontSize="28"
+                       Margin="0"
+                       Padding="0"/>
+                <Label Content="File Management Tool" 
+                       FontSize="14"
+                       Foreground="{DynamicResource OffWhite}"
+                       Margin="0"
+                       Padding="0"/>
+            </StackPanel>
+        </StackPanel>
+        
+        <Rectangle Fill="{DynamicResource MidDark}" 
+                   HorizontalAlignment="Stretch" 
+                   VerticalAlignment="Bottom" 
+                   Height="2" 
+                   DockPanel.Dock="Bottom"/>
+    </DockPanel>
+    
+</UserControl>

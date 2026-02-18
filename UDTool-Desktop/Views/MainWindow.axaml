@@ -3,18 +3,149 @@
         xmlns:vm="using:UDTool_Desktop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:elements="clr-namespace:UDTool_Desktop.Elements"
+        mc:Ignorable="d"
+        d:DesignWidth="900" d:DesignHeight="600"
         x:Class="UDTool_Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="UDTool_Desktop">
+        Width="900" Height="600"
+        MinWidth="900" MaxWidth="900"
+        MinHeight="600" MaxHeight="900"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Icon="/Assets/logo.ico"
+        Title="UDTool Desktop">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
+    
+    <DockPanel>
+        <elements:Topbar DockPanel.Dock="Top"/>
+        
+        <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="20" Spacing="20">
+                
+                <!-- API Key Section -->
+                <Border Classes="card">
+                    <StackPanel Spacing="15">
+                        <Label Classes="subtitle" Content="API Key Configuration"/>
+                        
+                        <TextBox Text="{Binding ApiKey}" 
+                                 Watermark="Enter your API key or create a new one"
+                                 PasswordChar="•"
+                                 IsEnabled="{Binding !IsLoading}"/>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button Content="Check Key" 
+                                    Command="{Binding CheckKeyCommand}"
+                                    IsEnabled="{Binding !IsLoading}"
+                                    HorizontalAlignment="Left"/>
+                            <Button Content="Create New Key" 
+                                    Command="{Binding CreateNewKeyCommand}"
+                                    IsEnabled="{Binding !IsLoading}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        
+                        <TextBlock Text="{Binding StatusMessage}" 
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource PrimaryForeground}"/>
+                    </StackPanel>
+                </Border>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!-- Upload Section -->
+                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
+                    <StackPanel Spacing="15">
+                        <Label Classes="subtitle" Content="Upload File"/>
+                        
+                        <TextBox Text="{Binding UploadFilePath}" 
+                                 Watermark="File path to upload"
+                                 IsEnabled="{Binding !IsLoading}"/>
+                        
+                        <TextBox Text="{Binding UploadTargetName}" 
+                                 Watermark="Target file name on server"
+                                 IsEnabled="{Binding !IsLoading}"/>
+                        
+                        <Button Content="Upload File" 
+                                Command="{Binding UploadFileCommand}"
+                                IsEnabled="{Binding !IsLoading}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Download Section -->
+                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
+                    <StackPanel Spacing="15">
+                        <Label Classes="subtitle" Content="Download File"/>
+                        
+                        <TextBox Text="{Binding DownloadFileName}" 
+                                 Watermark="File name to download"
+                                 IsEnabled="{Binding !IsLoading}"/>
+                        
+                        <Button Content="Download File" 
+                                Command="{Binding DownloadFileCommand}"
+                                IsEnabled="{Binding !IsLoading}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Search Section -->
+                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
+                    <StackPanel Spacing="15">
+                        <Label Classes="subtitle" Content="Search Files"/>
+                        
+                        <TextBox Text="{Binding SearchQuery}" 
+                                 Watermark="Search query"
+                                 IsEnabled="{Binding !IsLoading}"/>
+                        
+                        <Button Content="Search" 
+                                Command="{Binding SearchFilesCommand}"
+                                IsEnabled="{Binding !IsLoading}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Delete Section -->
+                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
+                    <StackPanel Spacing="15">
+                        <Label Classes="subtitle" Content="Delete File"/>
+                        
+                        <TextBox Text="{Binding DeleteFileName}" 
+                                 Watermark="File name to delete"
+                                 IsEnabled="{Binding !IsLoading}"/>
+                        
+                        <Button Content="Delete File" 
+                                Command="{Binding DeleteFileCommand}"
+                                IsEnabled="{Binding !IsLoading}"
+                                Classes="secondary"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Files List Section -->
+                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
+                    <StackPanel Spacing="15">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Label Classes="subtitle" Content="All Files"/>
+                            <Button Content="↻ Refresh" 
+                                    Command="{Binding RefreshFileListCommand}"
+                                    IsEnabled="{Binding !IsLoading}"
+                                    VerticalAlignment="Center"
+                                    Padding="10,5"/>
+                        </StackPanel>
+                        
+                        <ListBox ItemsSource="{Binding FilesList}"
+                                 Height="200"
+                                 Background="{DynamicResource BackgroundBrush}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" 
+                                               Padding="5"
+                                               Cursor="Hand"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
 
 </Window>
