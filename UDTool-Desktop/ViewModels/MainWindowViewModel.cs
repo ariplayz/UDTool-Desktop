@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -43,12 +43,74 @@ public partial class MainWindowViewModel : ViewModelBase
     private bool _isLoading;
     
     [ObservableProperty]
-    private string _selectedTab = "Files";
+    private string? _selectedFile;
+
+    private Views.SettingsWindow? _settingsWindow;
 
     public MainWindowViewModel()
     {
         // Try to load saved API key
         LoadApiKey();
+    }
+
+    [RelayCommand]
+    private void OpenSettings()
+    {
+        if (_settingsWindow == null || !_settingsWindow.IsVisible)
+        {
+            _settingsWindow = new Views.SettingsWindow
+            {
+                DataContext = this
+            };
+            _settingsWindow.Show();
+        }
+        else
+        {
+            _settingsWindow.Activate();
+        }
+    }
+
+    [RelayCommand]
+    private void CloseSettings()
+    {
+        _settingsWindow?.Close();
+    }
+
+    [RelayCommand]
+    private void Exit()
+    {
+        Environment.Exit(0);
+    }
+
+    [RelayCommand]
+    private void BrowseUploadFile()
+    {
+        // File picker will be implemented
+        StatusMessage = "File picker not yet implemented. Enter path manually.";
+    }
+
+    [RelayCommand]
+    private async Task DownloadSelected()
+    {
+        // Use the generated property SelectedFile (from _selectedFile field)
+        var fileToDownload = SelectedFile;
+        if (!string.IsNullOrEmpty(fileToDownload))
+        {
+            DownloadFileName = fileToDownload;
+            await DownloadFileAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteSelected()
+    {
+        // Use the generated property SelectedFile (from _selectedFile field)
+        var fileToDelete = SelectedFile;
+        if (!string.IsNullOrEmpty(fileToDelete))
+        {
+            DeleteFileName = fileToDelete;
+            await DeleteFileAsync();
+        }
     }
 
     [RelayCommand]

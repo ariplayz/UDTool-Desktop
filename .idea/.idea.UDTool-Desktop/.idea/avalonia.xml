@@ -8,6 +8,7 @@
         <entry key="UDTool-Desktop/Elements/Tabs.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
         <entry key="UDTool-Desktop/Elements/Topbar.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
         <entry key="UDTool-Desktop/Views/MainWindow.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
+        <entry key="UDTool-Desktop/Views/SettingsWindow.axaml" value="UDTool-Desktop/UDTool-Desktop.csproj" />
       </map>
     </option>
   </component>

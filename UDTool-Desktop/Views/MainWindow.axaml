@@ -23,129 +23,230 @@
     <DockPanel>
         <elements:Topbar DockPanel.Dock="Top"/>
         
-        <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="20" Spacing="20">
-                
-                <!-- API Key Section -->
-                <Border Classes="card">
-                    <StackPanel Spacing="15">
-                        <Label Classes="subtitle" Content="API Key Configuration"/>
-                        
-                        <TextBox Text="{Binding ApiKey}" 
-                                 Watermark="Enter your API key or create a new one"
-                                 PasswordChar="•"
-                                 IsEnabled="{Binding !IsLoading}"/>
-                        
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Button Content="Check Key" 
-                                    Command="{Binding CheckKeyCommand}"
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top" Background="{DynamicResource CardBackgroundBrush}">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Settings" Command="{Binding OpenSettingsCommand}">
+                    <MenuItem.Icon>
+                        <TextBlock Text="⚙" FontSize="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}">
+                    <MenuItem.Icon>
+                        <TextBlock Text="✕" FontSize="16"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        
+        <!-- Status Bar -->
+        <Border DockPanel.Dock="Bottom" 
+                Background="{DynamicResource CardBackgroundBrush}" 
+                Padding="10,5"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource MidDark}">
+            <Grid>
+                <TextBlock Text="{Binding StatusMessage}" 
+                           TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource PrimaryForeground}"
+                           VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" 
+                           Spacing="10"
+                           HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding IsKeyValid, Converter={StaticResource BoolToStatusConverter}}"
+                               Foreground="{Binding IsKeyValid, Converter={StaticResource BoolToColorConverter}}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="●" 
+                               Foreground="{Binding IsKeyValid, Converter={StaticResource BoolToColorConverter}}"
+                               VerticalAlignment="Center"
+                               FontSize="16"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Main Content with Tabs -->
+        <TabControl DockPanel.Dock="Top" Margin="0">
+            <!-- Upload Tab -->
+            <TabItem Header="📤 Upload" IsEnabled="{Binding IsKeyValid}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Border Classes="card" Margin="20">
+                        <StackPanel Spacing="15">
+                            <Label Classes="subtitle" Content="Upload File to Server"/>
+                            
+                            <StackPanel Spacing="10">
+                                <Label Content="Local File Path:"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding UploadFilePath}" 
+                                             Watermark="Select or enter file path"
+                                             IsEnabled="{Binding !IsLoading}"/>
+                                    <Button Grid.Column="1"
+                                            Content="Browse..."
+                                            Command="{Binding BrowseUploadFileCommand}"
+                                            IsEnabled="{Binding !IsLoading}"
+                                            Margin="5,0,0,0"
+                                            Padding="15,8"/>
+                                </Grid>
+                            </StackPanel>
+                            
+                            <StackPanel Spacing="10">
+                                <Label Content="Target Name on Server:"/>
+                                <TextBox Text="{Binding UploadTargetName}" 
+                                         Watermark="Enter file name on server"
+                                         IsEnabled="{Binding !IsLoading}"/>
+                            </StackPanel>
+                            
+                            <Button Content="Upload File" 
+                                    Command="{Binding UploadFileCommand}"
                                     IsEnabled="{Binding !IsLoading}"
-                                    HorizontalAlignment="Left"/>
-                            <Button Content="Create New Key" 
-                                    Command="{Binding CreateNewKeyCommand}"
-                                    IsEnabled="{Binding !IsLoading}"
-                                    HorizontalAlignment="Left"/>
+                                    HorizontalAlignment="Stretch"
+                                    Padding="0,12"
+                                    FontSize="16"/>
                         </StackPanel>
-                        
-                        <TextBlock Text="{Binding StatusMessage}" 
-                                   TextWrapping="Wrap"
-                                   Foreground="{DynamicResource PrimaryForeground}"/>
-                    </StackPanel>
-                </Border>
+                    </Border>
+                </ScrollViewer>
+            </TabItem>
 
-                <!-- Upload Section -->
-                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
-                    <StackPanel Spacing="15">
-                        <Label Classes="subtitle" Content="Upload File"/>
-                        
-                        <TextBox Text="{Binding UploadFilePath}" 
-                                 Watermark="File path to upload"
-                                 IsEnabled="{Binding !IsLoading}"/>
-                        
-                        <TextBox Text="{Binding UploadTargetName}" 
-                                 Watermark="Target file name on server"
-                                 IsEnabled="{Binding !IsLoading}"/>
-                        
-                        <Button Content="Upload File" 
-                                Command="{Binding UploadFileCommand}"
-                                IsEnabled="{Binding !IsLoading}"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Download Section -->
-                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
-                    <StackPanel Spacing="15">
-                        <Label Classes="subtitle" Content="Download File"/>
-                        
-                        <TextBox Text="{Binding DownloadFileName}" 
-                                 Watermark="File name to download"
-                                 IsEnabled="{Binding !IsLoading}"/>
-                        
-                        <Button Content="Download File" 
-                                Command="{Binding DownloadFileCommand}"
-                                IsEnabled="{Binding !IsLoading}"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Search Section -->
-                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
-                    <StackPanel Spacing="15">
-                        <Label Classes="subtitle" Content="Search Files"/>
-                        
-                        <TextBox Text="{Binding SearchQuery}" 
-                                 Watermark="Search query"
-                                 IsEnabled="{Binding !IsLoading}"/>
-                        
-                        <Button Content="Search" 
-                                Command="{Binding SearchFilesCommand}"
-                                IsEnabled="{Binding !IsLoading}"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Delete Section -->
-                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
-                    <StackPanel Spacing="15">
-                        <Label Classes="subtitle" Content="Delete File"/>
-                        
-                        <TextBox Text="{Binding DeleteFileName}" 
-                                 Watermark="File name to delete"
-                                 IsEnabled="{Binding !IsLoading}"/>
-                        
-                        <Button Content="Delete File" 
-                                Command="{Binding DeleteFileCommand}"
-                                IsEnabled="{Binding !IsLoading}"
-                                Classes="secondary"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Files List Section -->
-                <Border Classes="card" IsEnabled="{Binding IsKeyValid}">
-                    <StackPanel Spacing="15">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Label Classes="subtitle" Content="All Files"/>
-                            <Button Content="↻ Refresh" 
-                                    Command="{Binding RefreshFileListCommand}"
+            <!-- Download Tab -->
+            <TabItem Header="📥 Download" IsEnabled="{Binding IsKeyValid}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Border Classes="card" Margin="20">
+                        <StackPanel Spacing="15">
+                            <Label Classes="subtitle" Content="Download File from Server"/>
+                            
+                            <StackPanel Spacing="10">
+                                <Label Content="File Name:"/>
+                                <TextBox Text="{Binding DownloadFileName}" 
+                                         Watermark="Enter file name to download"
+                                         IsEnabled="{Binding !IsLoading}"/>
+                            </StackPanel>
+                            
+                            <Button Content="Download File" 
+                                    Command="{Binding DownloadFileCommand}"
                                     IsEnabled="{Binding !IsLoading}"
-                                    VerticalAlignment="Center"
-                                    Padding="10,5"/>
+                                    HorizontalAlignment="Stretch"
+                                    Padding="0,12"
+                                    FontSize="16"/>
+                                    
+                            <TextBlock Text="💡 Tip: Downloaded files are saved to the current directory"
+                                      Foreground="{DynamicResource SecondaryForeground}"
+                                      FontStyle="Italic"
+                                      Margin="0,10,0,0"/>
                         </StackPanel>
-                        
-                        <ListBox ItemsSource="{Binding FilesList}"
-                                 Height="200"
-                                 Background="{DynamicResource BackgroundBrush}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" 
-                                               Padding="5"
-                                               Cursor="Hand"/>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </StackPanel>
-                </Border>
+                    </Border>
+                </ScrollViewer>
+            </TabItem>
 
-            </StackPanel>
-        </ScrollViewer>
+            <!-- Files Tab -->
+            <TabItem Header="📋 Files" IsEnabled="{Binding IsKeyValid}">
+                <DockPanel Margin="20">
+                    <!-- Search Bar -->
+                    <Border Classes="card" DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <StackPanel Spacing="10">
+                            <Label Content="Search Files:" FontWeight="Bold"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding SearchQuery}" 
+                                         Watermark="Enter search query"
+                                         IsEnabled="{Binding !IsLoading}"/>
+                                <Button Grid.Column="1"
+                                        Content="🔍 Search" 
+                                        Command="{Binding SearchFilesCommand}"
+                                        IsEnabled="{Binding !IsLoading}"
+                                        Margin="5,0,0,0"
+                                        Padding="15,8"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Files List -->
+                    <Border Classes="card" DockPanel.Dock="Top">
+                        <StackPanel Spacing="15">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" 
+                                       Classes="subtitle" 
+                                       Content="All Files"
+                                       VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Content="↻ Refresh" 
+                                        Command="{Binding RefreshFileListCommand}"
+                                        IsEnabled="{Binding !IsLoading}"
+                                        Padding="10,5"/>
+                            </Grid>
+                            
+                            <ListBox ItemsSource="{Binding FilesList}"
+                                     Height="320"
+                                     Background="{DynamicResource BackgroundBrush}"
+                                     SelectionMode="Single"
+                                     SelectedItem="{Binding SelectedFile}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="10,8" 
+                                                Background="Transparent"
+                                                CornerRadius="4">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0" 
+                                                          Text="📄" 
+                                                          FontSize="16"
+                                                          Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1"
+                                                          Text="{Binding}" 
+                                                          VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Content="⬇ Download Selected" 
+                                        Command="{Binding DownloadSelectedCommand}"
+                                        IsEnabled="{Binding !IsLoading}"
+                                        Padding="12,8"/>
+                                <Button Content="🗑 Delete Selected" 
+                                        Command="{Binding DeleteSelectedCommand}"
+                                        IsEnabled="{Binding !IsLoading}"
+                                        Classes="secondary"
+                                        Padding="12,8"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+
+            <!-- Delete Tab -->
+            <TabItem Header="🗑 Delete" IsEnabled="{Binding IsKeyValid}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Border Classes="card" Margin="20">
+                        <StackPanel Spacing="15">
+                            <Label Classes="subtitle" Content="Delete File from Server"/>
+                            
+                            <TextBlock Text="⚠ Warning: This action cannot be undone!"
+                                      Foreground="#F87171"
+                                      FontWeight="Bold"
+                                      Margin="0,0,0,10"/>
+                            
+                            <StackPanel Spacing="10">
+                                <Label Content="File Name:"/>
+                                <TextBox Text="{Binding DeleteFileName}" 
+                                         Watermark="Enter file name to delete"
+                                         IsEnabled="{Binding !IsLoading}"/>
+                            </StackPanel>
+                            
+                            <Button Content="Delete File" 
+                                    Command="{Binding DeleteFileCommand}"
+                                    IsEnabled="{Binding !IsLoading}"
+                                    Classes="secondary"
+                                    HorizontalAlignment="Stretch"
+                                    Padding="0,12"
+                                    FontSize="16"/>
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 
 </Window>

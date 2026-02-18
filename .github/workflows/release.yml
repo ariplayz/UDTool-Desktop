@@ -78,6 +78,11 @@ jobs:
           cp publish/osx-x64/UDTool-Desktop "UDTool-Desktop.app/Contents/MacOS/"
           chmod +x "UDTool-Desktop.app/Contents/MacOS/UDTool-Desktop"
           
+          # Copy icon (convert to icns or use png)
+          if [ -f "UDTool-Desktop/Assets/logo.png" ]; then
+            cp "UDTool-Desktop/Assets/logo.png" "UDTool-Desktop.app/Contents/Resources/logo.png"
+          fi
+          
           # Create Info.plist
           cat > "UDTool-Desktop.app/Contents/Info.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -99,7 +104,7 @@ jobs:
               <key>CFBundleExecutable</key>
               <string>UDTool-Desktop</string>
               <key>CFBundleIconFile</key>
-              <string>icon.icns</string>
+              <string>logo.png</string>
               <key>LSMinimumSystemVersion</key>
               <string>10.15</string>
               <key>NSHighResolutionCapable</key>
@@ -166,6 +171,9 @@ jobs:
           cp publish/linux-x64/UDTool-Desktop deb-package/usr/local/bin/
           chmod +x deb-package/usr/local/bin/UDTool-Desktop
           
+          # Copy icon
+          cp UDTool-Desktop/Assets/logo.png deb-package/usr/share/pixmaps/udtool-desktop.png
+          
           # Create control file
           cat > deb-package/DEBIAN/control << EOF
           Package: udtool-desktop
@@ -201,6 +209,7 @@ jobs:
           mkdir -p rpm-package/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
           mkdir -p rpm-package/SOURCES/usr/local/bin
           mkdir -p rpm-package/SOURCES/usr/share/applications
+          mkdir -p rpm-package/SOURCES/usr/share/pixmaps
           
           # Copy executable
           cp publish/linux-x64/UDTool-Desktop rpm-package/SOURCES/usr/local/bin/
@@ -208,6 +217,9 @@ jobs:
           
           # Copy desktop entry
           cp deb-package/usr/share/applications/udtool-desktop.desktop rpm-package/SOURCES/usr/share/applications/
+          
+          # Copy icon
+          cp UDTool-Desktop/Assets/logo.png rpm-package/SOURCES/usr/share/pixmaps/udtool-desktop.png
           
           # Create spec file
           cat > rpm-package/SPECS/udtool-desktop.spec << EOF
@@ -225,12 +237,15 @@ jobs:
           %install
           mkdir -p %{buildroot}/usr/local/bin
           mkdir -p %{buildroot}/usr/share/applications
+          mkdir -p %{buildroot}/usr/share/pixmaps
           cp %{_topdir}/SOURCES/usr/local/bin/UDTool-Desktop %{buildroot}/usr/local/bin/
           cp %{_topdir}/SOURCES/usr/share/applications/udtool-desktop.desktop %{buildroot}/usr/share/applications/
+          cp %{_topdir}/SOURCES/usr/share/pixmaps/udtool-desktop.png %{buildroot}/usr/share/pixmaps/
           
           %files
           /usr/local/bin/UDTool-Desktop
           /usr/share/applications/udtool-desktop.desktop
+          /usr/share/pixmaps/udtool-desktop.png
           
           %changelog
           * $(date '+%a %b %d %Y') Ari Cummings <your.email@example.com> - 1.0.0-1

@@ -1,0 +1,74 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:UDTool_Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="UDTool_Desktop.Views.SettingsWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="500" Height="400"
+        Title="Settings"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        CanResize="False"
+        Icon="/Assets/logo.ico">
+
+    <Border Classes="card" Margin="20">
+        <StackPanel Spacing="15">
+            <Label Classes="title" Content="Settings" FontSize="24"/>
+            
+            <Separator/>
+            
+            <Label Classes="subtitle" Content="API Key Configuration"/>
+            
+            <TextBox Text="{Binding ApiKey}" 
+                     Watermark="Enter your API key or create a new one"
+                     IsEnabled="{Binding !IsLoading}"/>
+            
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="Check Key" 
+                        Command="{Binding CheckKeyCommand}"
+                        IsEnabled="{Binding !IsLoading}"
+                        HorizontalAlignment="Left"/>
+                <Button Content="Create New Key" 
+                        Command="{Binding CreateNewKeyCommand}"
+                        IsEnabled="{Binding !IsLoading}"
+                        HorizontalAlignment="Left"/>
+            </StackPanel>
+            
+            <Border Background="{DynamicResource BackgroundBrush}"
+                    Padding="15"
+                    CornerRadius="6"
+                    Margin="0,10,0,0">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="API Key Status:" 
+                              FontWeight="Bold"
+                              Foreground="{DynamicResource PrimaryForeground}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="●" 
+                                  Foreground="{Binding IsKeyValid, Converter={StaticResource BoolToColorConverter}}"
+                                  FontSize="16"
+                                  VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding IsKeyValid, Converter={StaticResource BoolToStatusConverter}}"
+                                  Foreground="{Binding IsKeyValid, Converter={StaticResource BoolToColorConverter}}"
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <TextBlock Text="{Binding StatusMessage}" 
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource SecondaryForeground}"
+                       Margin="0,10,0,0"/>
+                       
+            <Button Content="Close" 
+                    Command="{Binding CloseSettingsCommand}"
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0"
+                    Padding="20,8"/>
+        </StackPanel>
+    </Border>
+
+</Window>
+

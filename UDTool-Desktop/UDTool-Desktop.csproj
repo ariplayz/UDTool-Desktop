@@ -5,6 +5,16 @@
         <Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        
+        <!-- Application Icon for all platforms -->
+        <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+        
+        <!-- macOS specific settings -->
+        <CFBundleIconFile>logo.png</CFBundleIconFile>
+        
+        <!-- Linux specific settings -->
+        <ApplicationTitle>UDTool Desktop</ApplicationTitle>
+        <ApplicationId>com.aricummings.udtooldesktop</ApplicationId>
     </PropertyGroup>
 
     <ItemGroup>

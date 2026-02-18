@@ -17,6 +17,7 @@
     <Application.Resources>
         <!-- Converters -->
         <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
+        <converters:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
         
         <!-- Modern Red Theme Colors -->
         <Color x:Key="SystemAccentColor">#E63946</Color>
