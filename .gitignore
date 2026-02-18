@@ -3,3 +3,12 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+# Installer build outputs
+installer-output/
+publish/
+*.msi
+*.pkg
+*.deb
+*.rpm
+

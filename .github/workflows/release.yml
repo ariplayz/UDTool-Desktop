@@ -1,0 +1,330 @@
+﻿name: Build and Release Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore UDTool-Desktop/UDTool-Desktop.csproj
+
+      - name: Publish Windows x64
+        run: |
+          dotnet publish UDTool-Desktop/UDTool-Desktop.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=false `
+            -p:PublishTrimmed=false `
+            -o publish/win-x64
+
+      - name: Install WiX Toolset
+        run: dotnet tool install --global wix --version 5.0.1
+
+      - name: Build MSI installer
+        run: |
+          wix extension add WixToolset.UI.wixext
+          wix build UDTool-Desktop/Installer.wxs `
+            -d PublishDir=publish/win-x64 `
+            -o publish/UDTool-Desktop-Setup.msi `
+            -arch x64 `
+            -ext WixToolset.UI.wixext
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msi
+          path: publish/UDTool-Desktop-Setup.msi
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore UDTool-Desktop/UDTool-Desktop.csproj
+
+      - name: Publish macOS x64
+        run: |
+          dotnet publish UDTool-Desktop/UDTool-Desktop.csproj \
+            -c Release \
+            -r osx-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -o publish/osx-x64
+
+      - name: Create macOS app bundle
+        run: |
+          mkdir -p "UDTool-Desktop.app/Contents/MacOS"
+          mkdir -p "UDTool-Desktop.app/Contents/Resources"
+          
+          # Copy executable
+          cp publish/osx-x64/UDTool-Desktop "UDTool-Desktop.app/Contents/MacOS/"
+          chmod +x "UDTool-Desktop.app/Contents/MacOS/UDTool-Desktop"
+          
+          # Create Info.plist
+          cat > "UDTool-Desktop.app/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleName</key>
+              <string>UDTool Desktop</string>
+              <key>CFBundleDisplayName</key>
+              <string>UDTool Desktop</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.aricummings.udtooldesktop</string>
+              <key>CFBundleVersion</key>
+              <string>1.0.0</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleSignature</key>
+              <string>????</string>
+              <key>CFBundleExecutable</key>
+              <string>UDTool-Desktop</string>
+              <key>CFBundleIconFile</key>
+              <string>icon.icns</string>
+              <key>LSMinimumSystemVersion</key>
+              <string>10.15</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Create PKG installer
+        run: |
+          # Create package structure
+          mkdir -p pkgroot/Applications
+          cp -R UDTool-Desktop.app pkgroot/Applications/
+          
+          # Build the package
+          pkgbuild --root pkgroot \
+            --identifier com.aricummings.udtooldesktop \
+            --version 1.0.0 \
+            --install-location / \
+            UDTool-Desktop.pkg
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-pkg
+          path: UDTool-Desktop.pkg
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Restore dependencies
+        run: dotnet restore UDTool-Desktop/UDTool-Desktop.csproj
+
+      - name: Publish Linux x64
+        run: |
+          dotnet publish UDTool-Desktop/UDTool-Desktop.csproj \
+            -c Release \
+            -r linux-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -o publish/linux-x64
+
+      - name: Create DEB package structure
+        run: |
+          mkdir -p deb-package/usr/local/bin
+          mkdir -p deb-package/usr/share/applications
+          mkdir -p deb-package/usr/share/pixmaps
+          mkdir -p deb-package/DEBIAN
+          
+          # Copy executable
+          cp publish/linux-x64/UDTool-Desktop deb-package/usr/local/bin/
+          chmod +x deb-package/usr/local/bin/UDTool-Desktop
+          
+          # Create control file
+          cat > deb-package/DEBIAN/control << EOF
+          Package: udtool-desktop
+          Version: 1.0.0
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Ari Cummings <your.email@example.com>
+          Description: UDTool Desktop - File Management Tool
+           A modern desktop application for managing files on the UDTool cloud service.
+           Provides a user-friendly GUI for uploading, downloading, searching, and managing files.
+          EOF
+          
+          # Create desktop entry
+          cat > deb-package/usr/share/applications/udtool-desktop.desktop << EOF
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=UDTool Desktop
+          Comment=File Management Tool
+          Exec=/usr/local/bin/UDTool-Desktop
+          Icon=udtool-desktop
+          Terminal=false
+          Categories=Utility;Network;
+          EOF
+
+      - name: Build DEB package
+        run: |
+          dpkg-deb --build deb-package udtool-desktop_1.0.0_amd64.deb
+
+      - name: Create RPM package structure
+        run: |
+          mkdir -p rpm-package/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+          mkdir -p rpm-package/SOURCES/usr/local/bin
+          mkdir -p rpm-package/SOURCES/usr/share/applications
+          
+          # Copy executable
+          cp publish/linux-x64/UDTool-Desktop rpm-package/SOURCES/usr/local/bin/
+          chmod +x rpm-package/SOURCES/usr/local/bin/UDTool-Desktop
+          
+          # Copy desktop entry
+          cp deb-package/usr/share/applications/udtool-desktop.desktop rpm-package/SOURCES/usr/share/applications/
+          
+          # Create spec file
+          cat > rpm-package/SPECS/udtool-desktop.spec << EOF
+          Name:           udtool-desktop
+          Version:        1.0.0
+          Release:        1%{?dist}
+          Summary:        UDTool Desktop - File Management Tool
+          License:        Proprietary
+          URL:            https://udtool.delphigamerz.xyz
+          
+          %description
+          A modern desktop application for managing files on the UDTool cloud service.
+          Provides a user-friendly GUI for uploading, downloading, searching, and managing files.
+          
+          %install
+          mkdir -p %{buildroot}/usr/local/bin
+          mkdir -p %{buildroot}/usr/share/applications
+          cp %{_topdir}/SOURCES/usr/local/bin/UDTool-Desktop %{buildroot}/usr/local/bin/
+          cp %{_topdir}/SOURCES/usr/share/applications/udtool-desktop.desktop %{buildroot}/usr/share/applications/
+          
+          %files
+          /usr/local/bin/UDTool-Desktop
+          /usr/share/applications/udtool-desktop.desktop
+          
+          %changelog
+          * $(date '+%a %b %d %Y') Ari Cummings <your.email@example.com> - 1.0.0-1
+          - Initial release
+          EOF
+
+      - name: Build RPM package
+        run: |
+          rpmbuild --define "_topdir $(pwd)/rpm-package" \
+            -bb rpm-package/SPECS/udtool-desktop.spec
+          
+          # Copy the built RPM to a known location
+          find rpm-package/RPMS -name "*.rpm" -exec cp {} udtool-desktop-1.0.0-1.x86_64.rpm \;
+
+      - name: Upload Linux DEB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: udtool-desktop_1.0.0_amd64.deb
+
+      - name: Upload Linux RPM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-rpm
+          path: udtool-desktop-1.0.0-1.x86_64.rpm
+
+  create-release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get tag name
+        id: tag_name
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=manual-build-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag_name.outputs.tag }}
+          name: UDTool Desktop ${{ steps.tag_name.outputs.tag }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/windows-msi/UDTool-Desktop-Setup.msi
+            artifacts/macos-pkg/UDTool-Desktop.pkg
+            artifacts/linux-deb/udtool-desktop_1.0.0_amd64.deb
+            artifacts/linux-rpm/udtool-desktop-1.0.0-1.x86_64.rpm
+          body: |
+            ## UDTool Desktop Release ${{ steps.tag_name.outputs.tag }}
+            
+            ### Installation
+            
+            #### Windows
+            Download and run `UDTool-Desktop-Setup.msi`
+            
+            #### macOS
+            Download and run `UDTool-Desktop.pkg`
+            
+            #### Linux (Debian/Ubuntu)
+            ```bash
+            sudo dpkg -i udtool-desktop_1.0.0_amd64.deb
+            ```
+            
+            #### Linux (Fedora/RHEL/CentOS)
+            ```bash
+            sudo rpm -i udtool-desktop-1.0.0-1.x86_64.rpm
+            ```
+            
+            ### Features
+            - 🔑 API Key Management
+            - 📤 File Upload
+            - 📥 File Download
+            - 🔍 File Search
+            - 🗑️ File Delete
+            - 📋 File List
+            
+            See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for detailed usage instructions.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

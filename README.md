@@ -1,4 +1,4 @@
-﻿# UDTool Desktop
+﻿﻿﻿# UDTool Desktop
 
 A modern Avalonia-based desktop application for managing files on the UDTool cloud service. This application provides a user-friendly GUI for uploading, downloading, searching, and managing files with API key authentication.
 
@@ -18,28 +18,56 @@ A modern Avalonia-based desktop application for managing files on the UDTool clo
 - 🎨 **Modern UI** - Professional dark theme with card-based layout
 - ⚡ **Async Operations** - Non-blocking UI for all network operations
 
-## Prerequisites
+## Installation
+
+### Download Pre-built Installers
+
+Download the latest installer for your platform from the [Releases](../../releases) page:
+
+#### Windows
+- Download `UDTool-Desktop-Setup.msi`
+- Double-click to run the installer
+- Follow the installation wizard
+
+#### macOS
+- Download `UDTool-Desktop.pkg`
+- Double-click to run the installer
+- Follow the installation wizard
+
+#### Linux (Debian/Ubuntu)
+```bash
+# Download the .deb file, then:
+sudo dpkg -i udtool-desktop_1.0.0_amd64.deb
+```
+
+#### Linux (Fedora/RHEL/CentOS)
+```bash
+# Download the .rpm file, then:
+sudo rpm -i udtool-desktop-1.0.0-1.x86_64.rpm
+```
+
+### Build from Source
+
+#### Prerequisites
 
 - .NET 10.0 SDK or later
 - Windows, macOS, or Linux
 
-## Installation
-
-### Clone the Repository
+#### Clone the Repository
 
 ```bash
 git clone <repository-url>
 cd UDTool-Desktop
 ```
 
-### Build the Project
+#### Build the Project
 
 ```bash
 cd UDTool-Desktop
 dotnet build
 ```
 
-### Run the Application
+#### Run the Application
 
 ```bash
 dotnet run
@@ -213,7 +241,117 @@ private const string BaseUrl = "https://your-api-url.com";
 
 ## Building for Production
 
-### Create a Self-Contained Executable
+### Building Installers
+
+The project includes installers for all major platforms: Windows MSI, macOS PKG, Linux DEB, and Linux RPM.
+
+#### Quick Start - Build Windows MSI Locally
+
+```powershell
+# Run the build script from project root
+.\build-msi.ps1
+
+# Output: installer-output\UDTool-Desktop-Setup.msi
+```
+
+**Requirements:**
+- .NET 10.0 SDK
+- WiX Toolset v5/v6 (installed automatically by script)
+
+**Test the installer:**
+```powershell
+# Install
+msiexec /i installer-output\UDTool-Desktop-Setup.msi
+
+# Uninstall
+msiexec /x installer-output\UDTool-Desktop-Setup.msi
+
+# Install with logging (for debugging)
+msiexec /i installer-output\UDTool-Desktop-Setup.msi /l*v install.log
+```
+
+#### Manual Windows MSI Build
+
+```powershell
+# 1. Publish the application
+dotnet publish UDTool-Desktop/UDTool-Desktop.csproj `
+    -c Release `
+    -r win-x64 `
+    --self-contained true `
+    -p:PublishSingleFile=false `
+    -o publish/win-x64
+
+# 2. Install WiX (if not installed)
+dotnet tool install --global wix --version 5.0.1
+
+# 3. Add WiX UI extension
+wix extension add WixToolset.UI.wixext
+
+# 4. Build the MSI
+wix build UDTool-Desktop/Installer.wxs `
+    -d PublishDir=publish/win-x64 `
+    -o UDTool-Desktop-Setup.msi `
+    -arch x64 `
+    -ext WixToolset.UI.wixext
+```
+
+### Automated Release with GitHub Actions
+
+The project includes a complete CI/CD workflow that builds installers for all platforms automatically.
+
+#### Creating a Release
+
+**Option 1: Tag-based Release (Recommended)**
+```bash
+# Create and push a version tag
+git tag v1.0.0
+git push origin v1.0.0
+
+# GitHub Actions automatically:
+# 1. Builds installers for all platforms
+# 2. Creates a GitHub release
+# 3. Attaches all installer files
+```
+
+**Option 2: Manual Trigger**
+1. Go to GitHub → "Actions" tab
+2. Select "Build and Release Installers" workflow
+3. Click "Run workflow" button
+4. Select branch and run
+
+#### What Gets Built
+
+Each release includes:
+- **Windows**: `UDTool-Desktop-Setup.msi`
+  - Professional MSI installer
+  - Start Menu shortcuts (app + uninstaller)
+  - Program Files installation
+  - All dependencies bundled
+  
+- **macOS**: `UDTool-Desktop.pkg`
+  - Native PKG installer
+  - Installs to /Applications
+  - Proper app bundle structure
+  
+- **Linux Debian/Ubuntu**: `udtool-desktop_1.0.0_amd64.deb`
+  - DEB package for apt
+  - Desktop entry included
+  - Installs to /usr/local/bin
+  
+- **Linux Fedora/RHEL/CentOS**: `udtool-desktop-1.0.0-1.x86_64.rpm`
+  - RPM package for yum/dnf
+  - Desktop entry included
+  - Installs to /usr/local/bin
+
+#### Workflow Triggers
+
+The GitHub Actions workflow runs on:
+- **Push with tag**: Any tag starting with 'v' (e.g., `v1.0.0`, `v2.1.3`)
+- **Manual dispatch**: Via GitHub Actions UI
+
+### Building Single-File Executables
+
+If you prefer a single executable without an installer:
 
 #### Windows
 ```bash
@@ -231,6 +369,44 @@ dotnet publish -c Release -r linux-x64 --self-contained -p:PublishSingleFile=tru
 ```
 
 The published executable will be in `bin/Release/net10.0/{runtime}/publish/`
+
+### Version Management
+
+To release a new version:
+
+1. **Update MSI version** in `UDTool-Desktop/Installer.wxs`:
+```xml
+<Package Name="UDTool Desktop"
+         Version="1.1.0.0"  <!-- Update this -->
+         ...>
+```
+
+2. **Update package versions** in `.github/workflows/release.yml` (DEB/RPM version strings)
+
+3. **Commit and tag**:
+```bash
+git add .
+git commit -m "Bump version to 1.1.0"
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+### Installer Customization
+
+#### Windows MSI
+Edit `UDTool-Desktop/Installer.wxs` to customize:
+- Installation directory
+- Start Menu shortcuts
+- Registry keys
+- Files included
+- Product metadata
+
+#### macOS/Linux
+Edit `.github/workflows/release.yml` to modify:
+- Installation paths
+- Desktop entry details
+- Package metadata
+- Build configurations
 
 ## Theme Customization
 
