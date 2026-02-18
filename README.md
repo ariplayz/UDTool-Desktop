@@ -1,4 +1,4 @@
-﻿﻿﻿# UDTool Desktop
+﻿﻿﻿﻿# UDTool Desktop
 
 A modern Avalonia-based desktop application for managing files on the UDTool cloud service. This application provides a user-friendly GUI for uploading, downloading, searching, and managing files with API key authentication.
 
@@ -256,7 +256,7 @@ The project includes installers for all major platforms: Windows MSI, macOS PKG,
 
 **Requirements:**
 - .NET 10.0 SDK
-- WiX Toolset v5/v6 (installed automatically by script)
+- WiX Toolset v5 (installed automatically by script)
 
 **Test the installer:**
 ```powershell
@@ -284,15 +284,11 @@ dotnet publish UDTool-Desktop/UDTool-Desktop.csproj `
 # 2. Install WiX (if not installed)
 dotnet tool install --global wix --version 5.0.1
 
-# 3. Add WiX UI extension
-wix extension add WixToolset.UI.wixext
-
-# 4. Build the MSI
+# 3. Build the MSI
 wix build UDTool-Desktop/Installer.wxs `
     -d PublishDir=publish/win-x64 `
     -o UDTool-Desktop-Setup.msi `
-    -arch x64 `
-    -ext WixToolset.UI.wixext
+    -arch x64
 ```
 
 ### Automated Release with GitHub Actions
