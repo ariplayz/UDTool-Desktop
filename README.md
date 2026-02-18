@@ -1,4 +1,4 @@
-﻿﻿﻿﻿# UDTool Desktop
+# Universal Data Tool
 
 A modern Avalonia-based desktop application for managing files on the UDTool cloud service. This application provides a user-friendly GUI for uploading, downloading, searching, and managing files with API key authentication.
 
