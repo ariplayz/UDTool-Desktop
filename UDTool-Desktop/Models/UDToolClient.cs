@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -13,7 +13,7 @@ namespace UDTool_Desktop.Models;
 public class UDToolClient
 {
     private const string BaseUrl = "https://UDTool.delphigamerz.xyz";
-    private const string Version = "1.0";
+    private const string Version = "1.0.2";
     private readonly HttpClient _client;
     private string? _apiKey;
 

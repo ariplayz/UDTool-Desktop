@@ -96,7 +96,7 @@ jobs:
               <key>CFBundleIdentifier</key>
               <string>com.aricummings.udtooldesktop</string>
               <key>CFBundleVersion</key>
-              <string>1.0.0</string>
+              <string>1.0.2</string>
               <key>CFBundlePackageType</key>
               <string>APPL</string>
               <key>CFBundleSignature</key>
@@ -122,7 +122,7 @@ jobs:
           # Build the package
           pkgbuild --root pkgroot \
             --identifier com.aricummings.udtooldesktop \
-            --version 1.0.0 \
+            --version 1.0.2 \
             --install-location / \
             UDTool-Desktop.pkg
 
@@ -177,7 +177,7 @@ jobs:
           # Create control file
           cat > deb-package/DEBIAN/control << EOF
           Package: udtool-desktop
-          Version: 1.0.0
+          Version: 1.0.2
           Section: utils
           Priority: optional
           Architecture: amd64
@@ -202,7 +202,7 @@ jobs:
 
       - name: Build DEB package
         run: |
-          dpkg-deb --build deb-package udtool-desktop_1.0.0_amd64.deb
+          dpkg-deb --build deb-package udtool-desktop_1.0.2_amd64.deb
 
       - name: Create RPM package structure
         run: |
@@ -224,7 +224,7 @@ jobs:
           # Create spec file
           cat > rpm-package/SPECS/udtool-desktop.spec << EOF
           Name:           udtool-desktop
-          Version:        1.0.0
+          Version:        1.0.2
           Release:        1%{?dist}
           Summary:        UDTool Desktop - File Management Tool
           License:        Proprietary
@@ -248,7 +248,7 @@ jobs:
           /usr/share/pixmaps/udtool-desktop.png
           
           %changelog
-          * $(date '+%a %b %d %Y') Ari Cummings <your.email@example.com> - 1.0.0-1
+          * $(date '+%a %b %d %Y') Ari Cummings <your.email@example.com> - 1.0.2-1
           - Initial release
           EOF
 
@@ -258,19 +258,19 @@ jobs:
             -bb rpm-package/SPECS/udtool-desktop.spec
           
           # Copy the built RPM to a known location
-          find rpm-package/RPMS -name "*.rpm" -exec cp {} udtool-desktop-1.0.0-1.x86_64.rpm \;
+          find rpm-package/RPMS -name "*.rpm" -exec cp {} udtool-desktop-1.0.2-1.x86_64.rpm \;
 
       - name: Upload Linux DEB artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-deb
-          path: udtool-desktop_1.0.0_amd64.deb
+          path: udtool-desktop_1.0.2_amd64.deb
 
       - name: Upload Linux RPM artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-rpm
-          path: udtool-desktop-1.0.0-1.x86_64.rpm
+          path: udtool-desktop-1.0.2-1.x86_64.rpm
 
   create-release:
     needs: [build-windows, build-macos, build-linux]
@@ -305,8 +305,8 @@ jobs:
           files: |
             artifacts/windows-msi/UDTool-Desktop-Setup.msi
             artifacts/macos-pkg/UDTool-Desktop.pkg
-            artifacts/linux-deb/udtool-desktop_1.0.0_amd64.deb
-            artifacts/linux-rpm/udtool-desktop-1.0.0-1.x86_64.rpm
+            artifacts/linux-deb/udtool-desktop_1.0.2_amd64.deb
+            artifacts/linux-rpm/udtool-desktop-1.0.2-1.x86_64.rpm
           body: |
             ## UDTool Desktop Release ${{ steps.tag_name.outputs.tag }}
             
@@ -320,12 +320,12 @@ jobs:
             
             #### Linux (Debian/Ubuntu)
             ```bash
-            sudo dpkg -i udtool-desktop_1.0.0_amd64.deb
+            sudo dpkg -i udtool-desktop_1.0.2_amd64.deb
             ```
             
             #### Linux (Fedora/RHEL/CentOS)
             ```bash
-            sudo rpm -i udtool-desktop-1.0.0-1.x86_64.rpm
+            sudo rpm -i udtool-desktop-1.0.2-1.x86_64.rpm
             ```
             
             ### Features

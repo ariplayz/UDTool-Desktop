@@ -2,7 +2,7 @@
 
 A modern Avalonia-based desktop application for managing files on the UDTool cloud service. This application provides a user-friendly GUI for uploading, downloading, searching, and managing files with API key authentication.
 
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.2-blue)
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![Avalonia](https://img.shields.io/badge/Avalonia-11.3.12-red)
 
@@ -37,13 +37,13 @@ Download the latest installer for your platform from the [Releases](../../releas
 #### Linux (Debian/Ubuntu)
 ```bash
 # Download the .deb file, then:
-sudo dpkg -i udtool-desktop_1.0.0_amd64.deb
+sudo dpkg -i udtool-desktop_1.0.2_amd64.deb
 ```
 
 #### Linux (Fedora/RHEL/CentOS)
 ```bash
 # Download the .rpm file, then:
-sudo rpm -i udtool-desktop-1.0.0-1.x86_64.rpm
+sudo rpm -i udtool-desktop-1.0.2-1.x86_64.rpm
 ```
 
 ### Build from Source
@@ -301,8 +301,8 @@ The project includes a complete CI/CD workflow that builds installers for all pl
 **Option 1: Tag-based Release (Recommended)**
 ```bash
 # Create and push a version tag
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.0.2
+git push origin v1.0.2
 
 # GitHub Actions automatically:
 # 1. Builds installers for all platforms
@@ -330,12 +330,12 @@ Each release includes:
   - Installs to /Applications
   - Proper app bundle structure
   
-- **Linux Debian/Ubuntu**: `udtool-desktop_1.0.0_amd64.deb`
+- **Linux Debian/Ubuntu**: `udtool-desktop_1.0.2_amd64.deb`
   - DEB package for apt
   - Desktop entry included
   - Installs to /usr/local/bin
   
-- **Linux Fedora/RHEL/CentOS**: `udtool-desktop-1.0.0-1.x86_64.rpm`
+- **Linux Fedora/RHEL/CentOS**: `udtool-desktop-1.0.2-1.x86_64.rpm`
   - RPM package for yum/dnf
   - Desktop entry included
   - Installs to /usr/local/bin
@@ -493,7 +493,7 @@ For issues, questions, or contributions, please [add contact/repository informat
 
 ---
 
-**Version**: 1.0  
+**Version**: 1.0.2  
 **Last Updated**: February 18, 2026  
 **Author**: Ari Cummings
 
