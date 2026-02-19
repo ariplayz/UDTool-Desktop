@@ -66,6 +66,29 @@
             </Grid>
         </Border>
         
+        <!-- Progress Bar -->
+        <Border DockPanel.Dock="Bottom" 
+                IsVisible="{Binding IsTransferring}"
+                Background="{DynamicResource CardBackgroundBrush}" 
+                Padding="15,10"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource MidDark}">
+            <StackPanel Spacing="5">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="Transferring..." FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="1" Text="{Binding EstimatedTimeRemaining}" 
+                             Foreground="{DynamicResource PrimaryForeground}"/>
+                </Grid>
+                <ProgressBar Value="{Binding ProgressValue}" 
+                           Maximum="100" 
+                           Height="10"/>
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="{Binding ProgressValue, StringFormat='{}{0:0.0}%'}" FontSize="12"/>
+                    <TextBlock Grid.Column="1" Text="{Binding TransferSpeed}" FontSize="12"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+        
         <!-- Main Content with Tabs -->
         <TabControl DockPanel.Dock="Top" Margin="0">
             <!-- Upload Tab -->

@@ -22,7 +22,7 @@ public class UDToolClient
         _apiKey = apiKey;
         _client = new HttpClient(new SocketsHttpHandler())
         {
-            Timeout = TimeSpan.FromSeconds(30)
+            Timeout = TimeSpan.FromHours(7)
         };
         
         if (!string.IsNullOrEmpty(_apiKey))
@@ -116,8 +116,9 @@ public class UDToolClient
     /// </summary>
     /// <param name="filePath">Path to the local file to upload</param>
     /// <param name="targetName">Name to save the file as on the server</param>
+    /// <param name="progress">Optional progress reporter</param>
     /// <returns>A result object containing success status and messages</returns>
-    public async Task<OperationResult> UploadAsync(string filePath, string targetName)
+    public async Task<OperationResult> UploadAsync(string filePath, string targetName, IProgress<TransferProgress>? progress = null)
     {
         try
         {
@@ -126,12 +127,19 @@ public class UDToolClient
                 return OperationResult.FailureResult($"File not found: {filePath}");
             }
 
-            var fileBytes = await File.ReadAllBytesAsync(filePath);
-            var fileName = Path.GetFileName(filePath);
+            // Open file with FileShare.Read to allows others to read, but we need SequentialScan for performance
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+            var fileLength = fileStream.Length;
+            
+            // Wrap the stream to report progress
+            var progressStream = new ProgressableStream(fileStream, (bytesSent) => 
+            {
+                progress?.Report(new TransferProgress(bytesSent, fileLength));
+            });
 
             using (var content = new MultipartFormDataContent())
             {
-                var fileContent = new ByteArrayContent(fileBytes);
+                var fileContent = new StreamContent(progressStream);
                 fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
                 content.Add(fileContent, "file", targetName);
 
@@ -165,18 +173,37 @@ public class UDToolClient
     /// </summary>
     /// <param name="fileName">Name of the file to download from the server</param>
     /// <param name="savePath">Optional path to save the file. If null, saves to current directory with original name</param>
+    /// <param name="progress">Optional progress reporter</param>
     /// <returns>A result object containing success status and messages</returns>
-    public async Task<OperationResult> DownloadAsync(string fileName, string? savePath = null)
+    public async Task<OperationResult> DownloadAsync(string fileName, string? savePath = null, IProgress<TransferProgress>? progress = null)
     {
         try
         {
-            var response = await _client.GetAsync($"{BaseUrl}/{fileName}");
+            // Use ResponseHeadersRead to avoid buffering the whole response in memory
+            using var response = await _client.GetAsync($"{BaseUrl}/{fileName}", HttpCompletionOption.ResponseHeadersRead);
 
             if (response.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsByteArrayAsync();
+                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
                 var outputPath = savePath ?? fileName;
-                await File.WriteAllBytesAsync(outputPath, content);
+                
+                using var contentStream = await response.Content.ReadAsStreamAsync();
+                
+                // Use a larger buffer for large files
+                using var fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
+                
+                var buffer = new byte[81920];
+                long totalBytesRead = 0;
+                int bytesRead;
+                
+                while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await fileStream.WriteAsync(buffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
+                    
+                    progress?.Report(new TransferProgress(totalBytesRead, totalBytes));
+                }
+                
                 return OperationResult.SuccessResult($"Downloaded {fileName} to {outputPath}");
             }
             else
@@ -308,6 +335,47 @@ public class UDToolClient
     {
         _client?.Dispose();
     }
+
+    private class ProgressableStream : Stream
+    {
+        private readonly Stream _innerStream;
+        private readonly Action<long> _onBytesRead;
+        private long _bytesRead;
+
+        public ProgressableStream(Stream innerStream, Action<long> onBytesRead)
+        {
+            _innerStream = innerStream;
+            _onBytesRead = onBytesRead;
+        }
+
+        public override bool CanRead => _innerStream.CanRead;
+        public override bool CanSeek => _innerStream.CanSeek;
+        public override bool CanWrite => _innerStream.CanWrite;
+        public override long Length => _innerStream.Length;
+        public override long Position { get => _innerStream.Position; set => _innerStream.Position = value; }
+
+        public override void Flush() => _innerStream.Flush();
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var bytes = _innerStream.Read(buffer, offset, count);
+            _bytesRead += bytes;
+            _onBytesRead?.Invoke(_bytesRead);
+            return bytes;
+        }
+        
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken)
+        {
+            var bytes = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+            _bytesRead += bytes;
+            _onBytesRead?.Invoke(_bytesRead);
+            return bytes;
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => _innerStream.Seek(offset, origin);
+        public override void SetLength(long value) => _innerStream.SetLength(value);
+        public override void Write(byte[] buffer, int offset, int count) => _innerStream.Write(buffer, offset, count);
+    }
 }
 
 /// <summary>
@@ -380,6 +448,14 @@ public class NewKeyResult
     }
 }
 
+/// <summary>
+/// Represents transfer progress.
+/// </summary>
+public record TransferProgress(long BytesTransferred, long TotalBytes)
+{
+    public double Percentage => TotalBytes > 0 ? (double)BytesTransferred / TotalBytes * 100 : 0;
+};
+
 // Helper classes for JSON deserialization
 internal class KeyCheckResponse
 {
@@ -392,3 +468,4 @@ internal class NewKeyResponse
     public string? message { get; set; }
     public string? key { get; set; }
 }
+

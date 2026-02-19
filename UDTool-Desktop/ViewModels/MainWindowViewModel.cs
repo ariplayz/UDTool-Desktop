@@ -46,6 +46,18 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string? _selectedFile;
 
+    [ObservableProperty]
+    private double _progressValue;
+    
+    [ObservableProperty]
+    private string _transferSpeed = string.Empty;
+    
+    [ObservableProperty]
+    private string _estimatedTimeRemaining = string.Empty;
+
+    [ObservableProperty]
+    private bool _isTransferring;
+
     private Views.SettingsWindow? _settingsWindow;
 
     public MainWindowViewModel()
@@ -231,10 +243,37 @@ public partial class MainWindowViewModel : ViewModelBase
 
         IsLoading = true;
         StatusMessage = $"Uploading {UploadTargetName}...";
+        ProgressValue = 0;
+        TransferSpeed = string.Empty;
+        EstimatedTimeRemaining = string.Empty;
+        IsTransferring = true;
 
         try
         {
-            var result = await _client.UploadAsync(UploadFilePath, UploadTargetName);
+            var startTime = DateTime.Now;
+            // Improved progress reporting with speed/ETA calculation
+            var progressHandler = new Progress<TransferProgress>(p => 
+            {
+                ProgressValue = p.Percentage;
+                var now = DateTime.Now;
+                var elapsed = now - startTime;
+                
+                if (elapsed.TotalSeconds > 0.5 && p.BytesTransferred > 0)
+                {
+                    double speedBytesPerSec = p.BytesTransferred / elapsed.TotalSeconds;
+                    
+                    TransferSpeed = FormatSpeed(speedBytesPerSec);
+                    
+                    if (speedBytesPerSec > 0 && p.TotalBytes > 0)
+                    {
+                        double remainingBytes = p.TotalBytes - p.BytesTransferred;
+                        double remainingSeconds = remainingBytes / speedBytesPerSec;
+                        EstimatedTimeRemaining = FormatTime(TimeSpan.FromSeconds(remainingSeconds));
+                    }
+                }
+            });
+
+            var result = await _client.UploadAsync(UploadFilePath, UploadTargetName, progressHandler);
             StatusMessage = result.Message;
             
             if (result.IsSuccess)
@@ -251,6 +290,7 @@ public partial class MainWindowViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+            IsTransferring = false;
         }
     }
 
@@ -271,11 +311,49 @@ public partial class MainWindowViewModel : ViewModelBase
 
         IsLoading = true;
         StatusMessage = $"Downloading {DownloadFileName}...";
+        ProgressValue = 0;
+        TransferSpeed = string.Empty;
+        EstimatedTimeRemaining = string.Empty;
+        IsTransferring = true;
 
         try
         {
-            var result = await _client.DownloadAsync(DownloadFileName);
+            var startTime = DateTime.Now;
+            var progressHandler = new Progress<TransferProgress>(p => 
+            {
+                ProgressValue = p.Percentage;
+                var now = DateTime.Now;
+                var elapsed = now - startTime;
+                
+                if (elapsed.TotalSeconds > 0.5 && p.BytesTransferred > 0)
+                {
+                    double speedBytesPerSec = p.BytesTransferred / elapsed.TotalSeconds;
+                    
+                    TransferSpeed = FormatSpeed(speedBytesPerSec);
+                    
+                    if (speedBytesPerSec > 0 && p.TotalBytes > 0)
+                    {
+                        double remainingBytes = p.TotalBytes - p.BytesTransferred;
+                        double remainingSeconds = remainingBytes / speedBytesPerSec;
+                        EstimatedTimeRemaining = FormatTime(TimeSpan.FromSeconds(remainingSeconds));
+                    }
+                }
+            });
+
+            // Determine downloads folder path
+            string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            // Ensure directory exists just in case
+            Directory.CreateDirectory(downloadsPath);
+            string savePath = Path.Combine(downloadsPath, DownloadFileName);
+
+            var result = await _client.DownloadAsync(DownloadFileName, savePath, progressHandler);
             StatusMessage = result.Message;
+            
+            if (result.IsSuccess)
+            {
+                DownloadFileName = string.Empty;
+                await RefreshFileListAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -284,6 +362,7 @@ public partial class MainWindowViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
+            IsTransferring = false;
         }
     }
 
@@ -454,5 +533,25 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             // Ignore load errors
         }
+    }
+
+    private string FormatSpeed(double bytesPerSecond)
+    {
+        if (bytesPerSecond < 1024)
+            return $"{bytesPerSecond:F0} B/s";
+        else if (bytesPerSecond < 1024 * 1024)
+            return $"{bytesPerSecond / 1024:F1} KB/s";
+        else
+            return $"{bytesPerSecond / (1024 * 1024):F1} MB/s";
+    }
+
+    private string FormatTime(TimeSpan time)
+    {
+        if (time.TotalHours >= 1)
+            return $"{time.Hours}h {time.Minutes}m {time.Seconds}s";
+        else if (time.TotalMinutes >= 1)
+            return $"{time.Minutes}m {time.Seconds}s";
+        else
+            return $"{time.Seconds}s";
     }
 }
