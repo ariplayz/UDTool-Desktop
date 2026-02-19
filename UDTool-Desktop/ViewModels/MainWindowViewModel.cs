@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using UDTool_Desktop.Models;
+using UDTool_Desktop.Services;
 
 namespace UDTool_Desktop.ViewModels;
 
@@ -83,10 +84,28 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void BrowseUploadFile()
+    private async Task BrowseUploadFile()
     {
-        // File picker will be implemented
-        StatusMessage = "File picker not yet implemented. Enter path manually.";
+        try
+        {
+            var filePath = await FilePickerService.OpenFileAsync();
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                UploadFilePath = filePath;
+                
+                // Auto-populate target name with the file name if empty
+                if (string.IsNullOrWhiteSpace(UploadTargetName))
+                {
+                    UploadTargetName = Path.GetFileName(filePath);
+                }
+                
+                StatusMessage = $"Selected file: {Path.GetFileName(filePath)}";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error selecting file: {ex.Message}";
+        }
     }
 
     [RelayCommand]

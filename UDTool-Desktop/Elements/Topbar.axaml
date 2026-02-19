@@ -24,7 +24,8 @@
                        Content="Universal Data Tool" 
                        FontSize="28"
                        Margin="0"
-                       Padding="0"/>
+                       Padding="0"
+                       Foreground="{DynamicResource MidDark}"/>
                 <Label Content="File Management Tool" 
                        FontSize="14"
                        Foreground="{DynamicResource OffWhite}"
