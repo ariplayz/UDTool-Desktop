@@ -6,6 +6,10 @@ A modern Avalonia-based desktop application for managing files on the UDTool clo
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![Avalonia](https://img.shields.io/badge/Avalonia-11.3.12-red)
 
+## Other Repositories
+- [**ASP.NET API**](https://github.com/ariplayz/UDToolAPI)
+- [**UDTool CLI**](https://github.com/ariplayz/UDTool)
+
 ## Features
 
 - 🔑 **API Key Management** - Create new keys or validate existing ones
